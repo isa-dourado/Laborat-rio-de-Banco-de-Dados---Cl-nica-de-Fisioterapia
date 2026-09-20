@@ -1,37 +1,59 @@
-CREATE DATABASE IF NOT EXISTS clinica_fisioterapia;
+-- =====================================================
+-- 01_DDL.SQL
+-- Estrutura do Banco de Dados da Clínica de Fisioterapia
+-- =====================================================
 
-USE clinica_fisioterapia;
+-- =====================================================
+-- EXCLUSÃO DAS TABELAS
+-- Permite executar o script novamente
+-- =====================================================
 
+DROP TABLE IF EXISTS EVOLUCAO CASCADE;
+DROP TABLE IF EXISTS ITEM_AGENDAMENTO CASCADE;
+DROP TABLE IF EXISTS AGENDAMENTO CASCADE;
+DROP TABLE IF EXISTS COBERTURA CASCADE;
+DROP TABLE IF EXISTS PROCEDIMENTO CASCADE;
+DROP TABLE IF EXISTS EQUIPAMENTO_SALA CASCADE;
+DROP TABLE IF EXISTS SALA CASCADE;
+DROP TABLE IF EXISTS VINCULO_CONVENIO CASCADE;
+DROP TABLE IF EXISTS CONVENIO CASCADE;
+DROP TABLE IF EXISTS QUALIFICACAO CASCADE;
+DROP TABLE IF EXISTS ESPECIALIDADE CASCADE;
+DROP TABLE IF EXISTS ADMINISTRATIVO CASCADE;
+DROP TABLE IF EXISTS RECEPCIONISTA CASCADE;
+DROP TABLE IF EXISTS FISIOTERAPEUTA CASCADE;
+DROP TABLE IF EXISTS PROFISSIONAL CASCADE;
+DROP TABLE IF EXISTS TELEFONE_PACIENTE CASCADE;
+DROP TABLE IF EXISTS PACIENTE CASCADE;
 
 -- =====================================================
 -- 1. PACIENTE
 -- =====================================================
 
 CREATE TABLE PACIENTE (
-    id_paciente INT PRIMARY KEY,
-    cpf VARCHAR(11) NOT NULL UNIQUE,
+    id_paciente INTEGER PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
     data_nascimento DATE NOT NULL,
     logradouro VARCHAR(150),
-    numero VARCHAR(10),
-    bairro VARCHAR(100),
-    cidade VARCHAR(100),
+    numero VARCHAR(20),
+    cpf VARCHAR(11) NOT NULL UNIQUE,
+    bairro VARCHAR(80),
+    cidade VARCHAR(80),
     UF CHAR(2),
     CEP VARCHAR(8),
-    id_paciente_indicador INT,
+    id_paciente_indicador INTEGER,
 
     CONSTRAINT fk_paciente_indicador
         FOREIGN KEY (id_paciente_indicador)
         REFERENCES PACIENTE(id_paciente)
 );
 
-
 -- =====================================================
 -- 2. TELEFONE_PACIENTE
 -- =====================================================
 
 CREATE TABLE TELEFONE_PACIENTE (
-    id_paciente INT,
+    id_paciente INTEGER,
     telefone VARCHAR(20),
 
     PRIMARY KEY (id_paciente, telefone),
@@ -41,26 +63,24 @@ CREATE TABLE TELEFONE_PACIENTE (
         REFERENCES PACIENTE(id_paciente)
 );
 
-
 -- =====================================================
 -- 3. PROFISSIONAL
 -- =====================================================
 
 CREATE TABLE PROFISSIONAL (
-    id_profissional INT PRIMARY KEY,
+    id_profissional INTEGER PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
     cpf VARCHAR(11) NOT NULL UNIQUE,
-    data_admissao DATE,
+    data_admissao DATE NOT NULL,
     telefone VARCHAR(20)
 );
-
 
 -- =====================================================
 -- 4. FISIOTERAPEUTA
 -- =====================================================
 
 CREATE TABLE FISIOTERAPEUTA (
-    id_profissional INT PRIMARY KEY,
+    id_profissional INTEGER PRIMARY KEY,
     numero_crefito VARCHAR(30) NOT NULL UNIQUE,
 
     CONSTRAINT fk_fisioterapeuta_profissional
@@ -68,13 +88,12 @@ CREATE TABLE FISIOTERAPEUTA (
         REFERENCES PROFISSIONAL(id_profissional)
 );
 
-
 -- =====================================================
 -- 5. RECEPCIONISTA
 -- =====================================================
 
 CREATE TABLE RECEPCIONISTA (
-    id_profissional INT PRIMARY KEY,
+    id_profissional INTEGER PRIMARY KEY,
     ramal VARCHAR(10),
 
     CONSTRAINT fk_recepcionista_profissional
@@ -82,40 +101,37 @@ CREATE TABLE RECEPCIONISTA (
         REFERENCES PROFISSIONAL(id_profissional)
 );
 
-
 -- =====================================================
 -- 6. ADMINISTRATIVO
 -- =====================================================
 
 CREATE TABLE ADMINISTRATIVO (
-    id_profissional INT PRIMARY KEY,
-    cargo VARCHAR(100),
+    id_profissional INTEGER PRIMARY KEY,
+    cargo VARCHAR(80) NOT NULL,
 
     CONSTRAINT fk_administrativo_profissional
         FOREIGN KEY (id_profissional)
         REFERENCES PROFISSIONAL(id_profissional)
 );
 
-
 -- =====================================================
 -- 7. ESPECIALIDADE
 -- =====================================================
 
 CREATE TABLE ESPECIALIDADE (
-    id_especialidade INT PRIMARY KEY,
+    id_especialidade INTEGER PRIMARY KEY,
     nome_especialidade VARCHAR(100) NOT NULL,
     descricao VARCHAR(255)
 );
-
 
 -- =====================================================
 -- 8. QUALIFICACAO
 -- =====================================================
 
 CREATE TABLE QUALIFICACAO (
-    id_profissional INT,
-    id_especialidade INT,
-    data_qualificacao DATE,
+    id_profissional INTEGER,
+    id_especialidade INTEGER,
+    data_qualificacao DATE NOT NULL,
 
     PRIMARY KEY (id_profissional, id_especialidade),
 
@@ -128,25 +144,23 @@ CREATE TABLE QUALIFICACAO (
         REFERENCES ESPECIALIDADE(id_especialidade)
 );
 
-
 -- =====================================================
 -- 9. CONVENIO
 -- =====================================================
 
 CREATE TABLE CONVENIO (
-    id_convenio INT PRIMARY KEY,
+    id_convenio INTEGER PRIMARY KEY,
     nome_convenio VARCHAR(100) NOT NULL,
-    registro_ans VARCHAR(30)
+    registro_ans VARCHAR(20) NOT NULL UNIQUE
 );
-
 
 -- =====================================================
 -- 10. VINCULO_CONVENIO
 -- =====================================================
 
 CREATE TABLE VINCULO_CONVENIO (
-    id_paciente INT,
-    id_convenio INT,
+    id_paciente INTEGER,
+    id_convenio INTEGER,
     data_inicio DATE,
     data_fim DATE,
     numero_carteirinha VARCHAR(50),
@@ -162,24 +176,22 @@ CREATE TABLE VINCULO_CONVENIO (
         REFERENCES CONVENIO(id_convenio)
 );
 
-
 -- =====================================================
 -- 11. SALA
 -- =====================================================
 
 CREATE TABLE SALA (
-    id_sala INT PRIMARY KEY,
-    numero_sala VARCHAR(20) NOT NULL,
-    capacidade INT
+    id_sala INTEGER PRIMARY KEY,
+    numero_sala VARCHAR(20) NOT NULL UNIQUE,
+    capacidade INTEGER NOT NULL
 );
-
 
 -- =====================================================
 -- 12. EQUIPAMENTO_SALA
 -- =====================================================
 
 CREATE TABLE EQUIPAMENTO_SALA (
-    id_sala INT,
+    id_sala INTEGER,
     equipamento VARCHAR(100),
 
     PRIMARY KEY (id_sala, equipamento),
@@ -189,57 +201,34 @@ CREATE TABLE EQUIPAMENTO_SALA (
         REFERENCES SALA(id_sala)
 );
 
-
 -- =====================================================
 -- 13. PROCEDIMENTO
 -- =====================================================
 
 CREATE TABLE PROCEDIMENTO (
-    id_procedimento INT PRIMARY KEY,
-    nome_procedimento VARCHAR(100) NOT NULL,
-    id_especialidade INT,
-    valor_tabela DECIMAL(10,2),
-    duracao_padrao_min INT,
+    id_procedimento INTEGER PRIMARY KEY,
+    nome_procedimento VARCHAR(120) NOT NULL,
+    id_especialidade INTEGER NOT NULL,
+    valor_tabela NUMERIC(10,2) NOT NULL,
+    duracao_padrao_min INTEGER NOT NULL,
 
     CONSTRAINT fk_procedimento_especialidade
         FOREIGN KEY (id_especialidade)
         REFERENCES ESPECIALIDADE(id_especialidade)
 );
 
-
 -- =====================================================
--- 14. COBERTURA
--- =====================================================
-
-CREATE TABLE COBERTURA (
-    id_convenio INT,
-    id_procedimento INT,
-    percentual_cobertura DECIMAL(5,2),
-
-    PRIMARY KEY (id_convenio, id_procedimento),
-
-    CONSTRAINT fk_cobertura_convenio
-        FOREIGN KEY (id_convenio)
-        REFERENCES CONVENIO(id_convenio),
-
-    CONSTRAINT fk_cobertura_procedimento
-        FOREIGN KEY (id_procedimento)
-        REFERENCES PROCEDIMENTO(id_procedimento)
-);
-
-
--- =====================================================
--- 15. AGENDAMENTO
+-- 14. AGENDAMENTO
 -- =====================================================
 
 CREATE TABLE AGENDAMENTO (
-    id_agendamento INT PRIMARY KEY,
-    id_paciente INT,
-    id_fisioterapeuta INT,
-    id_sala INT,
-    data_hora_inicio DATETIME,
-    data_hora_fim DATETIME,
-    status VARCHAR(30),
+    id_agendamento INTEGER PRIMARY KEY,
+    id_paciente INTEGER NOT NULL,
+    id_fisioterapeuta INTEGER NOT NULL,
+    id_sala INTEGER NOT NULL,
+    data_hora_inicio TIMESTAMP NOT NULL,
+    data_hora_fim TIMESTAMP NOT NULL,
+    status VARCHAR(20) NOT NULL,
 
     CONSTRAINT fk_agendamento_paciente
         FOREIGN KEY (id_paciente)
@@ -254,16 +243,15 @@ CREATE TABLE AGENDAMENTO (
         REFERENCES SALA(id_sala)
 );
 
-
 -- =====================================================
--- 16. ITEM_AGENDAMENTO
+-- 15. ITEM_AGENDAMENTO
 -- =====================================================
 
 CREATE TABLE ITEM_AGENDAMENTO (
-    id_agendamento INT,
-    id_procedimento INT,
-    valor_cobrado DECIMAL(10,2),
-    duracao_realizada INT,
+    id_agendamento INTEGER,
+    id_procedimento INTEGER,
+    valor_cobrado NUMERIC(10,2) NOT NULL,
+    duracao_realizada INTEGER,
 
     PRIMARY KEY (id_agendamento, id_procedimento),
 
@@ -276,18 +264,37 @@ CREATE TABLE ITEM_AGENDAMENTO (
         REFERENCES PROCEDIMENTO(id_procedimento)
 );
 
+-- =====================================================
+-- 16. COBERTURA
+-- =====================================================
+
+CREATE TABLE COBERTURA (
+    id_convenio INTEGER,
+    id_procedimento INTEGER,
+    percentual_cobertura NUMERIC(5,2) NOT NULL,
+
+    PRIMARY KEY (id_convenio, id_procedimento),
+
+    CONSTRAINT fk_cobertura_convenio
+        FOREIGN KEY (id_convenio)
+        REFERENCES CONVENIO(id_convenio),
+
+    CONSTRAINT fk_cobertura_procedimento
+        FOREIGN KEY (id_procedimento)
+        REFERENCES PROCEDIMENTO(id_procedimento)
+);
 
 -- =====================================================
 -- 17. EVOLUCAO
 -- =====================================================
 
 CREATE TABLE EVOLUCAO (
-    id_paciente INT,
-    num_evolucao INT,
-    data_evolucao DATE,
-    id_agendamento INT,
-    id_fisioterapeuta_responsavel INT,
-    descricao_evolucao TEXT,
+    id_paciente INTEGER,
+    num_evolucao INTEGER,
+    data_evolucao DATE NOT NULL,
+    id_agendamento INTEGER NOT NULL,
+    id_fisioterapeuta_responsavel INTEGER NOT NULL,
+    descricao_evolucao TEXT NOT NULL,
 
     PRIMARY KEY (id_paciente, num_evolucao),
 
